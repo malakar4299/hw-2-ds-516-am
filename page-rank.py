@@ -29,11 +29,11 @@ def write_run_info(elapsed_upload_time,elapsed_processing_time, incoming_stats, 
     with open(filename, "w") as f:
         data = {'upload_time': elapsed_upload_time}
         data['processing_time'] = elapsed_processing_time
-        incoming_stats["Quintiles"] = incoming_stats["Quintiles"].tolist()
-        outgoing_stats["Quintiles"] = outgoing_stats["Quintiles"].tolist()
-        data['incoming_stats'] = incoming_stats
-        data['outgoing_stats'] = outgoing_stats
-        data['top_5_pages'] = top_5_counts
+        # incoming_stats["Quintiles"] = incoming_stats["Quintiles"].tolist()
+        # outgoing_stats["Quintiles"] = outgoing_stats["Quintiles"].tolist()
+        # data['incoming_stats'] = incoming_stats
+        # data['outgoing_stats'] = outgoing_stats
+        # data['top_5_pages'] = top_5_counts
         json.dump(data, f)
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
