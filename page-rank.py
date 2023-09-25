@@ -124,6 +124,17 @@ def pagerank(graph, max_iter=10, damping=0.85, tol=0.005):
 
     return pr
 
+def process_blob(blob):
+    """Processes a blob and extracts links."""
+    filename = blob.name.replace("files/", "").replace(".html", "")
+    parser = LinkExtractor()
+
+    with blob.open("r") as f:
+        parser.feed(f.read())
+
+    links = {re.sub(r"\.html$", "", link) for link in parser.links}
+    return filename, links
+
 
 def main():
     graph = defaultdict(set)
@@ -147,31 +158,22 @@ def main():
     bucket = storage_client.bucket(bucket_name)
     blobs = list(bucket.list_blobs())
 
-    # Pre-compile the regex pattern
-    pattern = re.compile(r"\.html$")
-
-    # Define a function to process each blob
-    def process_blob(blob):
-        filename = blob.name.replace("files/", "").replace(".html", "")
-        with blob.open("r") as f:
-            parser = LinkExtractor()
-            parser.feed(f.read())
-            links = set()  # Use set for O(1) lookups
-            for link in parser.links:
-                link = pattern.sub("", link)
-                links.add(link)
-                out_count[filename] += 1
-            return filename, links
-
-    graph = {}  # Assuming graph is a dict of sets
+    graph = {}
     out_count = defaultdict(int)
 
-    # Using threads to parallelize blob processing
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(process_blob, blobs))
-        
-        for filename, links in results:
-            graph[filename] = links
+    BATCH_SIZE = 100
+    total_blobs = len(blobs)
+
+    for i in range(0, total_blobs, BATCH_SIZE):
+        batch = blobs[i:i+BATCH_SIZE]
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(executor.map(process_blob, batch))
+
+            for filename, links in results:
+                graph[filename] = links
+                for link in links:
+                    out_count[filename] += 1
 
     in_count = [len(graph[filename]) for filename in graph]
     out_count = [out_count[filename] for filename in graph]
