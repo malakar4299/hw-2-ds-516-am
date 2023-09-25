@@ -145,17 +145,32 @@ def main():
 
     bucket = storage_client.bucket(bucket_name)
     blobs = list(bucket.list_blobs())
-    
-    for blob in blobs:
-        filename = blob.name.replace("files/", "")
-        filename = filename.replace(".html", "")
+
+    # Pre-compile the regex pattern
+    pattern = re.compile(r"\.html$")
+
+    # Define a function to process each blob
+    def process_blob(blob):
+        filename = blob.name.replace("files/", "").replace(".html", "")
         with blob.open("r") as f:
             parser = LinkExtractor()
             parser.feed(f.read())
+            links = set()  # Use set for O(1) lookups
             for link in parser.links:
-                link = re.sub(r"\.html$", "", link)
-                graph[filename].add(link)
+                link = pattern.sub("", link)
+                links.add(link)
                 out_count[filename] += 1
+            return filename, links
+
+    graph = {}  # Assuming graph is a dict of sets
+    out_count = defaultdict(int)
+
+    # Using threads to parallelize blob processing
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = list(executor.map(process_blob, blobs))
+        
+        for filename, links in results:
+            graph[filename] = links
 
     in_count = [len(graph[filename]) for filename in graph]
     out_count = [out_count[filename] for filename in graph]
