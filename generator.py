@@ -2,8 +2,6 @@
 import argparse
 import random
 
-random.seed(0)
-
 def add_text(f):
   text = "Lorem ipsum dolor sit amet, \
 consectetur adipiscing elit, sed do \
@@ -57,6 +55,7 @@ def main():
   parser.add_argument('-n', '--num_files', help="Specify the number of files to generate", type=int, default=10000)
   parser.add_argument('-m', '--max_refs', type=int, help="Specify the maximum number of references per file", default=250)
   args = parser.parse_args()
+  random.seed(0)
 
   print(args.num_files, args.max_refs)
   for i in range(0,args.num_files):

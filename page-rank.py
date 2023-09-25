@@ -172,9 +172,8 @@ def main():
 
             for filename, links in results:
                 graph[filename] = links
-                for link in links:
-                    out_count[filename] += 1
-
+                out_count[filename] = len(links)
+                
     in_count = [len(graph[filename]) for filename in graph]
     out_count = [out_count[filename] for filename in graph]
 
