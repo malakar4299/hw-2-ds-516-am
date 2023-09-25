@@ -109,6 +109,9 @@ def pagerank(graph, max_iter=10, damping=0.85, tol=0.005):
     for _ in range(max_iter):
         next_pr = {page: base_pr for page in graph}
         for page, outgoing_links in graph.items():
+            if not outgoing_links:
+                continue  # Skip this page because it has no outgoing links
+
             share_pr = pr[page] / len(outgoing_links)
             for link in outgoing_links:
                 if link not in next_pr:
@@ -157,7 +160,7 @@ def main():
 
     bucket = storage_client.bucket(bucket_name)
     blobs = list(bucket.list_blobs())
-    
+
     out_count = defaultdict(int)
 
     BATCH_SIZE = 100
