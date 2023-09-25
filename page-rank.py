@@ -157,8 +157,7 @@ def main():
 
     bucket = storage_client.bucket(bucket_name)
     blobs = list(bucket.list_blobs())
-
-    graph = {}
+    
     out_count = defaultdict(int)
 
     BATCH_SIZE = 100
@@ -173,7 +172,7 @@ def main():
             for filename, links in results:
                 graph[filename] = links
                 out_count[filename] = len(links)
-                
+
     in_count = [len(graph[filename]) for filename in graph]
     out_count = [out_count[filename] for filename in graph]
 
