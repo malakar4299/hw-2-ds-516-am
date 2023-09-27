@@ -39,14 +39,14 @@ def write_run_info(elapsed_upload_time,elapsed_processing_time, incoming_stats, 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     """Uploads a file to the bucket."""
-    storage_client = storage.Client()
+    storage_client = storage.Client.create_anonymous_client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_filename(source_file_name)
     print(f"File {source_file_name} uploaded to {destination_blob_name}.")
 
 def upload_folder_to_gcs(bucket_name, folder_path):
-    storage_client = storage.Client()
+    storage_client = storage.Client.create_anonymous_client()
     bucket = storage_client.get_bucket(bucket_name)
 
     count = 0
@@ -91,14 +91,7 @@ class LinkExtractor(HTMLParser):
                     self.links.append(value)
 
 
-def compute_stats(link_counts):
-    return {
-        "Average": np.mean(link_counts),
-        "Median": np.median(link_counts),
-        "Max": max(link_counts),
-        "Min": min(link_counts),
-        "Quintiles": np.percentile(link_counts, [20, 40, 60, 80])
-    }
+
 
 
 def pagerank(graph, max_iter=10, damping=0.85, tol=0.005):
@@ -127,7 +120,7 @@ def pagerank(graph, max_iter=10, damping=0.85, tol=0.005):
 
     return pr
 
-def process_blob(blob):
+def process_blob_data(blob):
     """Processes a blob and extracts links."""
     filename = blob.name.replace("files/", "").replace(".html", "")
     parser = LinkExtractor()
@@ -139,11 +132,21 @@ def process_blob(blob):
     return filename, links
 
 
+def compute_stats(link_counts):
+    return {
+        "Average": np.mean(link_counts),
+        "Median": np.median(link_counts),
+        "Max": max(link_counts),
+        "Min": min(link_counts),
+        "Quintiles": np.percentile(link_counts, [20, 40, 60, 80])
+    }
+
+
 def main():
     graph = defaultdict(set)
     out_count = defaultdict(int)
 
-    storage_client = storage.Client()
+    storage_client = storage.Client.create_anonymous_client()
     bucket_name = "hw-2-files-bucket"
 
     folder_path = "./files"  # Replace with your folder path
@@ -170,7 +173,7 @@ def main():
         batch = blobs[i:i+BATCH_SIZE]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            results = list(executor.map(process_blob, batch))
+            results = list(executor.map(process_blob_data, batch))
 
             for filename, links in results:
                 graph[filename] = links
