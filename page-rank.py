@@ -149,7 +149,7 @@ def main():
     storage_client = storage.Client.create_anonymous_client()
     bucket_name = "hw-2-files-bucket"
 
-    folder_path = "./files"  # Replace with your folder path
+    folder_path = "./files"  
 
     upload_folder_to_gcs(bucket_name, folder_path)
 
