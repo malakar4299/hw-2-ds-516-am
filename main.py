@@ -3,6 +3,7 @@ from google.cloud import storage
 from google.cloud import logging as gcloud_logging
 import requests
 import functions_framework
+from flask_cors import cross_origin
 
 app = Flask(__name__)
 
@@ -19,6 +20,7 @@ BANNED_COUNTRIES = ['North Korea', 'Iran', 'Cuba', 'Myanmar', 'Iraq', 'Libya', '
 SECOND_APP_URL = "http://localhost:5001/alert"
 
 
+@cross_origin()
 @functions_framework.http
 def serve_file(request):
     path = (request.path)
