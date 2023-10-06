@@ -1,0 +1,3 @@
+gcloud projects add-iam-policy-binding ds-561-am \
+    --member=serviceAccount:hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com \
+    --role=roles/logging.logWriter
