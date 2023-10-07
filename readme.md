@@ -1,57 +1,28 @@
-# How to Run the Program for a New User
+# Project: Logging Forbidden Requests
 
-_Note: The same information has been posted to the GitHub README file._
+This project consists of several applications designed to generate, handle, and log forbidden or banned requests. The applications include a tool to generate requests to a specific domain, a Flask application to handle incoming requests and log forbidden ones, and a continuous listener to process messages from Google Pub/Sub.
 
-## Steps to Run the Program
+## Applications Overview
 
-1. **Clone the GitHub Repository**:  git clone https://github.com/malakar4299/hw-2-ds-561-am.git into your desired directory.
+1. **Request Generator**: This Python application generates HTTP requests with specific headers to simulate requests from different countries, genders, ages, and income brackets.
 
-2. **File Availability**:  
-The files may not be present in the folder initially, but you can find them in the bucket `gs://hw-2-files-bucket/files`.
+2. **Flask Application (File Server)**: A Flask application that serves files and checks for forbidden requests based on the country specified in the headers. Forbidden requests are logged and published to a Google Pub/Sub topic.
 
-3. **Generating Files**:  
-If you need to generate files, run: python generator.py
+3. **Flask Application (Forbidden Requests Logger)**: This application consists of an HTTP endpoint that logs forbidden requests directly and a continuous listener that pulls messages from a Google Pub/Sub subscription detailing forbidden requests.
 
-4. **Credentials Requirement**:  
-To execute the page-rank algorithm, you'll require the necessary credentials. Anonymous access has been disabled for security reasons. To obtain the service account credentials JSON file, email me. Once you receive it, paste the JSON file into the root directory of the cloned repository.
+## Steps to Recreate and Run the Application
 
-5. **Executing the Page-Rank Algorithm**:  
-Run the command: python page-rank.py
+1. **Clone the Repository**:
+   - Use your local laptop or Google Cloud Shell to clone the GitHub repository.
+     ```
+     git clone <REPOSITORY_URL>
+     ```
+     Replace `<REPOSITORY_URL>` with the actual URL of the repository.
 
-This should generate the page rank and display the output on the terminal.
-
-6. **Logs**:  
-The `logs.json` file retains the runtime information, including the latest page-rank generation details.
-
-## Function Descriptions and Details
-
-- **read_last_run_time(types, filename="logs.json")**:  
-Reads the last run time from the `logs.json` file. The `type` parameter determines whether it's the processing time or upload time.
-
-- **write_run_info(elapsed_upload_time, elapsed_processing_time, incoming_stats, outgoing_stats, top_5_counts, filename="logs.json")**:  
-Logs new data into `logs.json` and regenerates the file as required.
-
-- **upload_blob(bucket_name, source_file_name, destination_blob_name)**:  
-Uploads blobs to the specified bucket. Source and destination file names define the blob specifics.
-
-- **upload_folder_to_gcs(bucket_name, folder_path)**:  
-Recursively uploads an entire folder to the bucket, treating each file as a distinct blob.
-
-- **class LinkExtractor(HTMLParser)**:  
-A custom class to extract `<a href>` tags from files to determine outgoing links.
-
-- **pagerank(graph, max_iter=10, damping=0.85, tol=0.005)**:  
-This is the core algorithm to compute page rank. It has default settings for max iterations (10), damping (0.85), and tolerance (0.005). In practice, while the assignment specifies certain values, the damping factor is typically provided, and the default page rank is calculated based on it.
-
-- **process_blob_data(blob)**:  
-Processes individual blob data.
-
-- **compute_stats(link_counts)**:  
-Calculates stats based on the provided link counts.
-
-- **Main**:  
-The primary function that orchestrates the execution of all sub-functions.
-
-
-
-
+2. **Deploy the Flask Application to Google Cloud Functions**:
+   - Navigate to the directory containing the Flask application (assuming it's the root of the cloned repository).
+     ```
+     cd <PATH_TO_REPOSITORY>
+     ```
+   - Deploy the application using the following command:
+     ```

@@ -4,6 +4,8 @@ from google.cloud import logging as gcloud_logging
 import requests
 import functions_framework
 from flask_cors import cross_origin
+from google.cloud import pubsub_v1
+import json
 
 app = Flask(__name__)
 
@@ -28,12 +30,19 @@ def serve_file(request):
     # Check HTTP method
     country = request.headers.get('X-country')
     if country in BANNED_COUNTRIES:
+        # Initialize publisher client
+        logger.log_text(f"APP 1 logging: banned country : {country} for file: {filename}")
+        publisher = pubsub_v1.PublisherClient()
+        topic_path = publisher.topic_path('ds-561-am', 'banned-message-handler')
         data = {
             'country': country,
             'ip': request.headers.get('X-client-IP'),
             'filename': filename
         }
-        requests.post(SECOND_APP_URL, json=data)
+
+        """Publish details of a request from a banned country to Pub/Sub."""
+        publisher.publish(topic_path, data=json.dumps(data).encode("utf-8"))
+        # requests.post(SECOND_APP_URL, json=data)
         return "Permission Denied", 400
 
 
