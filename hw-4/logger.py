@@ -1,14 +1,8 @@
-from flask import Flask, request
 from google.cloud import logging as gcloud_logging
-
 from google.cloud import pubsub_v1
 import json
 import time
-
 from google.cloud.pubsub_v1.types import PullRequest
-
-
-app = Flask(__name__)
 
 # Set up Google Cloud Logging
 logging_client = gcloud_logging.Client()
@@ -23,7 +17,7 @@ def continuously_pull_and_log():
     while True:
         print("checking messages")
         pull_and_log_banned_requests()
-        time.sleep(5)  # Sleep for 5 seconds before pulling again
+        time.sleep(20)  # Sleep for 5 seconds before pulling again
 
 def pull_and_log_banned_requests():
     """Pull messages from Pub/Sub and log them."""
@@ -45,10 +39,10 @@ def pull_and_log_banned_requests():
         print("Received forbidden request details:")
         print(f"Country: {message_data.get('country')}")
         print(f"IP Address: {message_data.get('ip')}")
-        print(f"Requested File: {message_data.get('requested_file')}")
+        print(f"Requested File: {message_data.get('filename')}")
         print("-" * 50)
 
-        log_message = f"FORBIDDEN REQUEST! Country: {message_data.get('country')}, IP: {message_data.get('ip')}, Requested File: {message_data.get('requested_file')}"
+        log_message = f"FORBIDDEN REQUEST! Country: {message_data.get('country')}, IP: {message_data.get('ip')}, Requested File: {message_data.get('filename')}"
         logger.log_text(log_message)
         
         # Acknowledge receipt of the message
@@ -58,17 +52,7 @@ def pull_and_log_banned_requests():
     if ack_ids:
         subscriber.acknowledge(request={"subscription": subscription_path, "ack_ids": ack_ids})
 
-@app.route('/alert', methods=['POST'])
-def alert():
-    data = request.json
-    country = data.get('country')
-    ip = data.get('ip')
-    filename = data.get('filename')
-    
-    log_message = f"FORBIDDEN REQUEST! Country: {country}, IP: {ip}, Requested File: {filename}"
-    logger.log_text(log_message)
-    return "Alert Received", 200
+
 
 if __name__ == '__main__':
     continuously_pull_and_log()
-    app.run(port=5001, debug=True)  # Running on a different port from the first app.
