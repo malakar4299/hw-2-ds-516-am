@@ -9,6 +9,9 @@ import os
 import ssl
 from datetime import date
 
+success_count_in_this_script = 0
+failure_count_in_this_script = 0
+
 
 list_of_countries = [ 'Afghanistan', 'Albania', 'Algeria', 'Andorra',
                       'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -141,6 +144,14 @@ def make_request(domain, port, country, ip, filename, use_ssl, ssl_context, foll
     conn.request("GET", filename, headers=headers)
     res = conn.getresponse()
     data = res.read()
+
+    if 200 <= res.status <= 404:
+        global success_count_in_this_script
+        success_count_in_this_script += 1
+    else:
+        global failure_count_in_this_script
+        failure_count_in_this_script += 1
+
     if verbose:
         print(res.status, res.reason)
         print(res.msg)
@@ -187,6 +198,9 @@ def main():
         if args.ssl and args.port==80:
             args.port=443
         make_request(args.domain, args.port, country, ip, filename, args.ssl, ssl_context, args.follow, args.verbose)
+
+    print(f"SUCCESS:{success_count_in_this_script}")
+    print(f"FAILURE:{failure_count_in_this_script}")    
 
 if __name__ == "__main__":
     main()
