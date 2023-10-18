@@ -20,10 +20,11 @@ logger = logging_client.logger('gcs-file-requests')
 
 BANNED_COUNTRIES = ['North Korea', 'Iran', 'Cuba', 'Myanmar', 'Iraq', 'Libya', 'Sudan', 'Zimbabwe', 'Syria']
 SECOND_APP_URL = "http://localhost:5001/alert"
+HTTP_METHODS = ['GET','POST','PUT', 'DELETE', 'HEAD', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
 
 
 @cross_origin()
-@app.route('/<path:filename>', methods=['GET'])
+@app.route('/<path:filename>', methods=HTTP_METHODS)
 def serve_file(filename):
     # Check HTTP method
     country = request.headers.get('X-country')
