@@ -3,7 +3,6 @@ certifi==2023.7.22
 charset-normalizer==3.3.0
 click==8.1.7
 cloudevents==1.10.0
-contourpy==1.1.1
 cycler==0.12.1
 deprecation==2.1.0
 Flask==2.2.5
