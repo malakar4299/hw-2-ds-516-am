@@ -40,3 +40,6 @@ urllib3==2.0.6
 watchdog==3.0.0
 Werkzeug==2.2.3
 zipp==3.15.0
+SQLAlchemy==2.0.17
+PyMySQL==1.1.0
+cloud-sql-python-connector==1.2.4

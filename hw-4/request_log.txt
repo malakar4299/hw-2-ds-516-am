@@ -15,9 +15,9 @@ All threads finished.
 -----------------
 Timestamp: 2023-10-17 21:09:48
 -----------------
-Total requests made: 500
-Successful requests: 500
-Failed requests: 0
+Total requests made: 12000
+Successful requests: 680
+Failed requests: 1
 All threads finished.
 -----------------
 Timestamp: 2023-10-17 21:11:22
