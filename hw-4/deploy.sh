@@ -14,3 +14,4 @@ gcloud compute instances create $MY_INSTANCE_NAME \
 gcloud compute addresses create hw-app-1-static --project=ds-561-am --network-tier=STANDARD --region=us-central1
 
 gcloud compute instances add-access-config hw-4-app-1 --project=ds-561-am --zone=us-central1-a --address=IP_OF_THE_NEWLY_CREATED_STATIC_ADDRESS --network-tier=STANDARD
+
