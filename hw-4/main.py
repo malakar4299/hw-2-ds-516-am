@@ -8,8 +8,6 @@ import datetime
 
 import sqlalchemy
 
-from connect_connector import connect_with_connector
-
 from google.cloud.sql.connector import Connector, IPTypes
 import pymysql
 
