@@ -1,0 +1,2 @@
+export GOOGLE_APPLICATION_CREDENTIALS="./keys.json" 
+gcloud services enable dataflow.googleapis.com
