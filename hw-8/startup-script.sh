@@ -7,7 +7,7 @@ pip3 install --upgrade pip
 
 # Define where to clone your repository and the directory for hw-4
 REPO_DIR="/opt/app1"
-HW4_DIR="$REPO_DIR/hw-4"
+HW4_DIR="$REPO_DIR/hw-8"
 
 # Fetch source code if it doesn't exist
 if [ ! -d "$REPO_DIR" ]; then
