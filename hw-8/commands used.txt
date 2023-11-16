@@ -1,0 +1,59 @@
+gcloud projects add-iam-policy-binding ds-561-am \
+    --member=serviceAccount:hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com \
+    --role=roles/logging.logWriter
+
+gcloud pubsub topics create banned-message-handler
+
+export GOOGLE_APPLICATION_CREDENTIALS="./keys.json" 
+
+gcloud functions deploy python-http-function-1 \
+     --gen2 \
+    --runtime=python311 \
+    --region=us-east4 \
+    --source=. \
+    --entry-point=serve_file \
+    --trigger-http \
+    --allow-unauthenticated \
+--max-instances=83
+
+
+python country-req.py -d python-http-function-1-le6thknpaa-uk.a.run.app -b none -w none -s -p 443 -n 100
+
+
+gcloud compute firewall-rules create default-allow-http-8080 \
+    --allow tcp:8080 \
+    --source-ranges 0.0.0.0/0 \
+    --target-tags http-server \
+    --description "Allow port 8080 access to http-server"
+
+
+gcloud projects add-iam-policy-binding ds-561-am --member="serviceAccount:hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com" --role=roles/secretmanager.admin
+
+gcloud projects add-iam-policy-binding ds-561-am \
+  --member serviceAccount:hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com \
+  --role roles/editor
+
+
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    client_ip VARCHAR(15),
+    gender VARCHAR(10),
+    age INT,
+    income FLOAT,
+    is_banned BOOLEAN
+);
+
+cat > $NGINX_CONF <<EOL
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+}
+
+python country-req.py -d 34.27.225.187 -b none -w none -n 200
