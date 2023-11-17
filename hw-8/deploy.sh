@@ -1,5 +1,5 @@
-MY_INSTANCE_NAME="hw-8-app-1-a"
-ZONE=us-central1-a
+MY_INSTANCE_NAME="hw-8-app-1-b"
+ZONE=us-west1-a
 
 gcloud compute instances create $MY_INSTANCE_NAME \
     --image-family=debian-10 \

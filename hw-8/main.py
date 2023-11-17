@@ -91,9 +91,11 @@ def serve_file(filename):
 
     content = blob.download_as_text()
     
-    response = make_response(content, mimetype='text/html')  # Adjust the mimetype based on your file types
+    response = make_response(content)  # Adjust the mimetype based on your file types
     response.headers['X-Server-Zone'] = zone
+    response.headers['Content-Type'] = 'text/html'
     return response
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
