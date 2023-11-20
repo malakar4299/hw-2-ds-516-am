@@ -57,3 +57,25 @@ server {
 }
 
 python country-req.py -d 34.27.225.187 -b none -w none -n 200
+
+gcloud compute firewall-rules create www-firewall-network-lb \
+    --target-tags http-server --allow tcp:80
+
+gcloud compute addresses create network-lb-ip-1 --region us-central1
+
+gcloud compute target-pools create www-pool \
+    --region us-central1 --http-health-check basic-check
+
+gcloud compute target-pools add-instances www-pool \
+    --instances hw-8-app-1-a,hw-8-app-1-b --zone=us-central1-a
+
+gcloud compute target-pools add-instances www-pool \
+    --instances hw-8-app-1-a,hw-8-app-1-b --zone=us-central1-b
+
+gcloud compute forwarding-rules create www-rule \
+    --region  us-central1 \
+    --ports 80 \
+    --address network-lb-ip-1 \
+    --target-pool www-pool
+
+gcloud compute forwarding-rules describe www-rule --region us-central1

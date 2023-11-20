@@ -9,6 +9,23 @@ import platform
 import os
 import ssl
 from datetime import date
+import time
+
+from collections import defaultdict
+from datetime import datetime
+
+# Initialize a dictionary to count responses from each zone
+zone_count = defaultdict(int)
+
+# Variables for tracking connection errors and recovery
+error_start_time = None
+error_end_time = None
+
+
+def append_to_log_file(log_message, file_name="load_balancer_log.txt"):
+    with open(file_name, "a") as log_file:
+        log_file.write(log_message + "\n")
+
 
 
 list_of_countries = [ 'Afghanistan', 'Albania', 'Algeria', 'Andorra',
@@ -129,32 +146,70 @@ def build_headers(country, ip):
     headers.update({'X-time':time_str})
     return headers
 
-def make_request(domain, port, country, ip, filename, use_ssl, ssl_context, follow, verbose):
-    if verbose:
-        print("Requesting ", filename, " from ", domain, port)
-    conn = None
-    if use_ssl:
-        conn = http.client.HTTPSConnection(domain, port, context=ssl_context)
-    else:
-        conn = http.client.HTTPConnection(domain, port)
+def make_request(domain, port, country, ip, filename, use_ssl, ssl_context, follow, verbose, max_retries=3, retry_delay=2):
+    global error_start_time, error_end_time
+    attempts = 0
+    while attempts < max_retries:
+        try:
+            if verbose:
+                print("Requesting ", filename, " from ", domain, port)
+            conn = None
+            if use_ssl:
+                conn = http.client.HTTPSConnection(domain, port, context=ssl_context)
+            else:
+                conn = http.client.HTTPConnection(domain, port)
 
-    headers = build_headers(country, ip)
-    conn.request("GET", filename, headers=headers)
-    res = conn.getresponse()
-    data = res.read()
-    if verbose:
-        print(res.status, res.reason)
-        print(res.msg)
-        print(data)
-    if follow:
-        location_header = res.getheader('location')
-        if location_header is not None:
-            filename = urljoin(filename, location_header)
-            make_request(domain, port, country, ip, filename, use_ssl, ssl_context, follow, verbose)
-    conn.close()
+            headers = build_headers(country, ip)
+            conn.request("GET", filename, headers=headers)
+            res = conn.getresponse()
+            data = res.read()
+
+            server_zone = res.getheader('X-Server-Zone', 'Unknown')
+
+            if verbose:
+                print(res.status, res.reason)
+                print("Server Zone:", server_zone)
+                print(res.msg)
+                print(data)
+
+            if follow:
+                location_header = res.getheader('location')
+                if location_header is not None:
+                    filename = urljoin(filename, location_header)
+                    make_request(domain, port, country, ip, filename, use_ssl, ssl_context, follow, verbose)
+            conn.close()
+
+            # Increment zone count
+            zone_count[server_zone] += 1
+
+
+            if error_start_time is not None:
+                error_end_time = time.time()
+                downtime_msg = f"Connection restored after {error_end_time - error_start_time} seconds"
+                print(downtime_msg)
+                append_to_log_file(downtime_msg)
+                error_start_time = None
+
+
+            break  # Successful request, break out of the loop
+        except (http.client.HTTPException, ConnectionRefusedError, ConnectionResetError) as e:
+            if error_start_time is None:
+                error_start_time = time.time()
+
+            attempts += 1
+            if verbose:
+                print(f"Request failed: {e}. Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+
+    if attempts == max_retries:
+        error_end_time = time.time()
+        print(f"Connection failed after {error_end_time - error_start_time} seconds")
+        print("Maximum retries reached. Exiting.")
                  
         
 def main():
+    global error_start_time, error_end_time, zone_count
+
     ssl_context = fix_certs()
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--domain", help="Domain to make requests to", type=str, default="www.python.org")
@@ -187,6 +242,25 @@ def main():
         if args.ssl and args.port==80:
             args.port=443
         make_request(args.domain, args.port, country, ip, filename, args.ssl, ssl_context, args.follow, args.verbose)
+
+
+    # Print the zone counts
+    for zone, count in zone_count.items():
+        zone_count_msg = f"Responses from {zone}: {count}"
+        print(zone_count_msg)
+        append_to_log_file(zone_count_msg)
+
+    # Print the duration of connection error, if any
+    if error_start_time is not None and error_end_time is not None:
+        total_downtime_msg = f"Total downtime: {error_end_time - error_start_time} seconds"
+        print(total_downtime_msg)
+        append_to_log_file(total_downtime_msg)
+
+
+    # datetime object containing current date and time
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    append_to_log_file("-------- Completed Run at: " + dt_string + "-----------")
 
 if __name__ == "__main__":
     main()
