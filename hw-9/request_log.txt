@@ -1,0 +1,42 @@
+-----------------
+Timestamp: 2023-10-17 21:08:50
+-----------------
+Total requests made: 100
+Successful requests: 100
+Failed requests: 0
+All threads finished.
+-----------------
+Timestamp: 2023-10-17 21:09:21
+-----------------
+Total requests made: 100
+Successful requests: 100
+Failed requests: 0
+All threads finished.
+-----------------
+Timestamp: 2023-10-17 21:09:48
+-----------------
+Total requests made: 12000
+Successful requests: 680
+Failed requests: 1
+All threads finished.
+-----------------
+Timestamp: 2023-10-17 21:11:22
+-----------------
+Total requests made: 2400
+Successful requests: 2400
+Failed requests: 0
+All threads finished.
+-----------------
+Timestamp: 2023-10-17 21:17:27
+-----------------
+Total requests made: 8000
+Successful requests: 8000
+Failed requests: 0
+All threads finished.
+-----------------
+Timestamp: 2023-10-17 21:32:04
+-----------------
+Total requests made: 12000
+Successful requests: 12000
+Failed requests: 0
+All threads finished.
