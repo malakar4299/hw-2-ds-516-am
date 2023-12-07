@@ -18,13 +18,16 @@ resources:
         type: ONE_TO_ONE_NAT
     metadata:
       items:
-      - key: files-bucket
-        value: $(ref.ds-561-gcs-bucket-am.name)
-      - key: service-account-email
-        value: $(ref.gdm-serv-acc-am.email)
       - key: startup-script
         value: |
           #!/bin/bash
+
+          python3 generate_files.py -n 10000 -m 250
+
+          # Upload generated files to GCS bucket
+          gsutil mkdir gs://ds-561-gcs-bucket-am/files
+          gsutil cp *.html gs://ds-561-gcs-bucket-am/files/
+
           apt-get update
           apt-get install -yq git python3-pip python3-venv nginx
           pip3 install --upgrade pip
