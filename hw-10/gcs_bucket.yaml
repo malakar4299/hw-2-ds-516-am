@@ -1,0 +1,5 @@
+resources:
+- name: ds-561-gcs-bucket-am
+  type: storage.v1.bucket
+  properties:
+    location: us-central1

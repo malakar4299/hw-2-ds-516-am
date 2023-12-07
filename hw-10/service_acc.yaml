@@ -1,0 +1,7 @@
+resources:
+- name: gdm-serv-acc-am
+  type: iam.v1.serviceAccount
+  properties:
+    accountId: ds561-service-account
+    displayName: GDM Service Account
+

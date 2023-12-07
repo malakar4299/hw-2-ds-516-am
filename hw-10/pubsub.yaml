@@ -1,0 +1,10 @@
+resources:
+- name: gdm-pubsub-am
+  type: pubsub.v1.topic
+  properties:
+    topic: gdm-pubsub-am-topic
+- name: gdm-pubsub-am-subscription
+  type: pubsub.v1.subscription
+  properties:
+    subscription: gdm-pubsub-am-sub
+    topic: $(ref.gdm-pubsub-am.name)

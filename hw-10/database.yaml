@@ -1,0 +1,12 @@
+resources:
+- name: my-cloud-sql-instance
+  type: sqladmin.v1beta4.instance
+  properties:
+    backendType: SECOND_GEN
+    instanceType: CLOUD_SQL_INSTANCE
+    region: us-central1
+    databaseVersion: MYSQL_5_7
+    settings:
+      tier: db-f1-micro
+    dependsOn:
+    - gdm-serv-acc-am

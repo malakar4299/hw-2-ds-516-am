@@ -1,0 +1,21 @@
+resources:
+- name: my-listener-instance
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: zones/us-central1-a/machineTypes/n1-standard-1
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+    networkInterfaces:
+    - network: global/networks/default
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #! /bin/bash
+          # Your startup script goes here
