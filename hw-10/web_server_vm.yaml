@@ -18,6 +18,10 @@ resources:
         type: ONE_TO_ONE_NAT
     metadata:
       items:
+      - key: files-bucket
+        value: $(ref.ds-561-gcs-bucket-am.name)
+      - key: service-account-email
+        value: $(ref.gdm-serv-acc-am.email)
       - key: startup-script
         value: |
           #!/bin/bash
