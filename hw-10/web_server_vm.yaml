@@ -1,32 +1,97 @@
+imports:
+  - path: service-accounts.py
+
+
 resources:
+
+- name: ds-561-gcs-bucket-am
+  type: storage.v1.bucket
+  properties:
+    location: us-central1
+
+- name: gdm-serv-acc-am
+  type: iam.v1.serviceAccount
+  properties:
+    accountId: ds561-service-account
+    displayName: GDM Service Account
+
+# - name: service-accounts
+#   type: service-accounts.py
+#   properties:
+#     project: ds-561-am
+#     service-account: ds561-service-account
+
+# Define IAM policy bindings for the service account
+# - name: sa-logging-role
+#   type: gcp-types/cloudresourcemanager-v1:virtual.projects.iamMemberBinding
+
+#   properties:
+#     accountId: ds561-service-account
+
+
+#   accessControl:
+#     gcpIamPolicy:
+#       bindings:
+#       - role: roles/logging.logWriter
+#         members:
+#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+#       - role: roles/pubsub.admin
+#         members:
+#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+#       - role: roles/cloudsql.admin
+#         members:
+#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+#       - role: roles/secretmanager.admin
+#         members:
+#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+#   metadata:
+#     dependsOn:
+#       - gdm-serv-acc-am
+
+
 - name: gdm-vm-web-am
   type: compute.v1.instance
   properties:
     zone: us-central1-a
-    machineType: zones/us-central1-a/machineTypes/e2-micro-1
+    machineType: zones/us-central1-a/machineTypes/e2-micro
     disks:
     - deviceName: boot
       type: PERSISTENT
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: projects/debian-cloud/global/images/family/debian-9
+        sourceImage: projects/debian-cloud/global/images/family/debian-10
     networkInterfaces:
     - network: global/networks/default
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
+    serviceAccounts:
+    - email: "hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com"
+      scopes:
+      - "https://www.googleapis.com/auth/userinfo.email"
+      - "https://www.googleapis.com/auth/cloud-platform"
+    tags:
+      items:
+      - http-server
+      - https-server
     metadata:
       items:
+      - key: google-logging-enabled
+        value: "true"
+      - key: files-bucket
+        value: $(ref.ds-561-gcs-bucket-am.name)
       - key: startup-script
         value: |
           #!/bin/bash
+          exec > /tmp/startup-script.log 2>&1
+          echo "Starting the startup script..."
 
-          python3 generate_files.py -n 10000 -m 250
+          gcloud config set account hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com
 
-          # Upload generated files to GCS bucket
-          gsutil mkdir gs://ds-561-gcs-bucket-am/files
-          gsutil cp *.html gs://ds-561-gcs-bucket-am/files/
+          gcloud projects add-iam-policy-binding ds-561-am \
+            --member=serviceAccount:ds561-service-account@ds-561-am.iam.gserviceaccount.com \
+            --role=roles/logging.logWriter
 
           apt-get update
           apt-get install -yq git python3-pip python3-venv nginx
@@ -34,7 +99,7 @@ resources:
 
           # Set the directory paths for the repository and HW-4
           REPO_DIR="/opt/app2"
-          HW5_DIR="$REPO_DIR/HW-10"
+          HW5_DIR="$REPO_DIR/hw-10"
 
           # Clone the source code repository if it doesn't exist
           if [ ! -d "$REPO_DIR" ]; then
@@ -50,6 +115,13 @@ resources:
 
           # Change the working directory to HW-5
           cd $HW5_DIR
+
+          mkdir files
+
+          $HW5_DIR/env/bin/python3 generator.py -n 10000 -m 250
+
+          # Upload generated files to GCS bucket
+          gsutil cp -r files gs://ds-561-gcs-bucket-am/
 
           # Configure Nginx for the Flask app
           NGINX_CONF="/etc/nginx/sites-available/flask_app"
@@ -84,4 +156,41 @@ resources:
           if ! pgrep -f "gunicorn -b 0.0.0.0:8080 main:app"; then
               $HW5_DIR/env/bin/gunicorn -b 0.0.0.0:8080 main:app --daemon
           fi
+
+    dependsOn:
+    - ds-561-gcs-bucket-am
+    - gdm-serv-acc-am
+
+
+# Add firewall rules for HTTP and HTTPS
+- name: allow-http
+  type: compute.v1.firewall
+  properties:
+    network: global/networks/default
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["80"]
+
+- name: allow-https
+  type: compute.v1.firewall
+  properties:
+    network: global/networks/default
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["443"]
+
+
+- name: my-cloud-sql-instance
+  type: sqladmin.v1beta4.instance
+  properties:
+    backendType: SECOND_GEN
+    instanceType: CLOUD_SQL_INSTANCE
+    region: us-central1
+    databaseVersion: MYSQL_5_7
+    settings:
+      tier: db-f1-micro
+    dependsOn:
+    - gdm-serv-acc-am
 

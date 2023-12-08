@@ -3,19 +3,70 @@ resources:
   type: compute.v1.instance
   properties:
     zone: us-central1-a
-    machineType: zones/us-central1-a/machineTypes/n1-standard-1
+    machineType: zones/us-central1-a/machineTypes/e2-micro
     disks:
     - deviceName: boot
       type: PERSISTENT
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+        sourceImage: projects/debian-cloud/global/images/family/debian-10
     networkInterfaces:
     - network: global/networks/default
+    serviceAccounts:
+    - email: "hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com"
+      scopes:
+      - "https://www.googleapis.com/auth/userinfo.email"
+      - "https://www.googleapis.com/auth/cloud-platform"
+    tags:
+      items:
+      - http-server
+      - https-server
     metadata:
       items:
+      - key: google-logging-enabled
+        value: "true"
       - key: startup-script
         value: |
-          #! /bin/bash
-          # Your startup script goes here
+          #!/bin/bash
+          exec > /tmp/startup-script.log 2>&1
+          echo "Starting the startup script..."
+
+          # Update and install required software
+          apt-get update
+          apt-get install -yq git python3-pip python3-venv
+
+          # Define where to clone your repository and the directory for hw-4
+          REPO_DIR="/opt/app"
+          HW4_DIR="$REPO_DIR/hw-10"
+
+          # Fetch source code if it doesn't exist
+          if [ ! -d "$REPO_DIR" ]; then
+              git clone https://github.com/malakar4299/hw-ds-561-am.git $REPO_DIR
+          fi
+
+          # Python environment setup for hw-4
+          if [ ! -d "$HW4_DIR/env" ]; then
+              python3 -m venv $HW4_DIR/env
+              $HW4_DIR/env/bin/pip install --upgrade pip
+              $HW4_DIR/env/bin/pip install -r $HW4_DIR/requirements.txt
+          fi
+
+          # Python start environment for hw-4
+          if [ -d "$HW4_DIR/env" ]; then
+              source $HW4_DIR/env/bin/activate
+          fi
+
+          # Start the country logger app directly
+          $HW4_DIR/env/bin/python3 $HW4_DIR/logger.py > $HW4_DIR/banned-data-logs.log 2>&1 &
+
+
+- name: gdm-pubsub-am
+  type: pubsub.v1.topic
+  properties:
+    topic: gdm-pubsub-am-topic
+- name: gdm-pubsub-am-subscription
+  type: pubsub.v1.subscription
+  properties:
+    subscription: gdm-pubsub-am-sub
+    topic: $(ref.gdm-pubsub-am.name)

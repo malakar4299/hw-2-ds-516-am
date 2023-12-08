@@ -1,6 +1,6 @@
 gcloud projects add-iam-policy-binding ds-561-am \
     --member=serviceAccount:hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com \
-    --role=roles/logging.logWriter
+    --role=roles/resourcemanager.projectIamAdmin
 
 gcloud pubsub topics create banned-message-handler
 
@@ -57,3 +57,5 @@ server {
 }
 
 python country-req.py -d 34.27.225.187 -b none -w none -n 200
+
+
