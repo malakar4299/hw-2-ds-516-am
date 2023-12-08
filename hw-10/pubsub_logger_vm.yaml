@@ -18,6 +18,9 @@ resources:
       scopes:
       - "https://www.googleapis.com/auth/userinfo.email"
       - "https://www.googleapis.com/auth/cloud-platform"
+      - "https://www.googleapis.com/auth/sqlservice.admin"       # For Cloud SQL
+      - "https://www.googleapis.com/auth/pubsub"                # For Pub/Sub
+      - "https://www.googleapis.com/auth/logging.write" 
     tags:
       items:
       - http-server
@@ -29,10 +32,6 @@ resources:
       - key: startup-script
         value: |
           #!/bin/bash
-          exec > /tmp/startup-script.log 2>&1
-          echo "Starting the startup script..."
-
-          # Update and install required software
           apt-get update
           apt-get install -yq git python3-pip python3-venv
 

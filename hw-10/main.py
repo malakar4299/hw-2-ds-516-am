@@ -80,10 +80,9 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
             instance_connection_name,
             "pymysql",
             user=db_user,
-            password=db_pass
+            password=db_pass,
+            db=db_name,
         )
-        conn.cursor().execute('create database ' + db_name)
-        conn.select_db(db_name)
 
         return conn
 

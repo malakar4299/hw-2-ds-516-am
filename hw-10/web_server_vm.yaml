@@ -71,6 +71,9 @@ resources:
       scopes:
       - "https://www.googleapis.com/auth/userinfo.email"
       - "https://www.googleapis.com/auth/cloud-platform"
+      - "https://www.googleapis.com/auth/sqlservice.admin"       # For Cloud SQL
+      - "https://www.googleapis.com/auth/pubsub"                # For Pub/Sub
+      - "https://www.googleapis.com/auth/logging.write" 
     tags:
       items:
       - http-server
@@ -84,15 +87,6 @@ resources:
       - key: startup-script
         value: |
           #!/bin/bash
-          exec > /tmp/startup-script.log 2>&1
-          echo "Starting the startup script..."
-
-          gcloud config set account hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com
-
-          gcloud projects add-iam-policy-binding ds-561-am \
-            --member=serviceAccount:ds561-service-account@ds-561-am.iam.gserviceaccount.com \
-            --role=roles/logging.logWriter
-
           apt-get update
           apt-get install -yq git python3-pip python3-venv nginx
           pip3 install --upgrade pip
@@ -193,4 +187,25 @@ resources:
       tier: db-f1-micro
     dependsOn:
     - gdm-serv-acc-am
+
+
+# Create a database in the Cloud SQL instance
+- name: my-database
+  type: sqladmin.v1beta4.database
+  properties:
+    name: hw-5  # Name of the database
+    instance: $(ref.my-cloud-sql-instance.name)
+    dependsOn:
+      - my-cloud-sql-instance
+
+# Create a database user with a password
+- name: my-database-user
+  type: sqladmin.v1beta4.user
+  properties:
+    name: amalakar  # Name of the user
+    instance: $(ref.my-cloud-sql-instance.name)
+    host: '%'
+    password: h2-6-am  # Replace with a secure password
+    dependsOn:
+      - my-cloud-sql-instance
 
