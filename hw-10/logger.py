@@ -10,7 +10,7 @@ logger = logging_client.logger('forbidden-requests')
 
 # Initialize subscriber client
 subscriber = pubsub_v1.SubscriberClient()
-subscription_path = subscriber.subscription_path('ds-561-am', 'banned-message-subs')
+subscription_path = subscriber.subscription_path('ds-561-am', 'gdm-pubsub-am-sub')
 
 def continuously_pull_and_log():
     """Continuously pull messages and log them."""
