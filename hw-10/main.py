@@ -80,9 +80,11 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
             instance_connection_name,
             "pymysql",
             user=db_user,
-            password=db_pass,
-            db=db_name,
+            password=db_pass
         )
+
+        conn.cursor.execute('CREATE DATABASE IF NOT EXISTS ' + db_name)
+        conn.select_db(db_name)
 
         return conn
 
@@ -186,7 +188,7 @@ def serve_file(filename):
         # Initialize publisher client
         logger.log_text(f"APP 1 logging: banned country : {country} for file: {filename}")
         publisher = pubsub_v1.PublisherClient()
-        topic_path = publisher.topic_path('ds-561-am', 'banned-message-handler')
+        topic_path = publisher.topic_path('ds-561-am', 'gdm-pubsub-am-topic')
 
         data = {
             'country': country,

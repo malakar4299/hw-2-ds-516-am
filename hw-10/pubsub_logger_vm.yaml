@@ -13,6 +13,9 @@ resources:
         sourceImage: projects/debian-cloud/global/images/family/debian-10
     networkInterfaces:
     - network: global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
     serviceAccounts:
     - email: "hw-2-access-bucket@ds-561-am.iam.gserviceaccount.com"
       scopes:
@@ -33,31 +36,35 @@ resources:
         value: |
           #!/bin/bash
           apt-get update
-          apt-get install -yq git python3-pip python3-venv
+          apt-get install -yq git python3-pip python3-venv nginx
+          pip3 install --upgrade pip
 
-          # Define where to clone your repository and the directory for hw-4
-          REPO_DIR="/opt/app"
-          HW4_DIR="$REPO_DIR/hw-10"
+          # Set the directory paths for the repository and HW-4
+          REPO_DIR="/opt/app2"
+          HW5_DIR="$REPO_DIR/hw-10"
 
-          # Fetch source code if it doesn't exist
+          # Clone the source code repository if it doesn't exist
           if [ ! -d "$REPO_DIR" ]; then
               git clone https://github.com/malakar4299/hw-ds-561-am.git $REPO_DIR
           fi
 
-          # Python environment setup for hw-4
-          if [ ! -d "$HW4_DIR/env" ]; then
-              python3 -m venv $HW4_DIR/env
-              $HW4_DIR/env/bin/pip install --upgrade pip
-              $HW4_DIR/env/bin/pip install -r $HW4_DIR/requirements.txt
+          # Create a Python virtual environment 
+          if [ ! -d "$HW5_DIR/env" ]; then
+              python3 -m venv $HW5_DIR/env
+              $HW5_DIR/env/bin/pip install --upgrade pip
+              $HW5_DIR/env/bin/pip install -r $HW5_DIR/requirements.txt
           fi
 
+          # Change the working directory to HW-5
+          cd $HW5_DIR
+
           # Python start environment for hw-4
-          if [ -d "$HW4_DIR/env" ]; then
-              source $HW4_DIR/env/bin/activate
+          if [ -d "$HW5_DIR/env" ]; then
+              source $HW5_DIR/env/bin/activate
           fi
 
           # Start the country logger app directly
-          $HW4_DIR/env/bin/python3 $HW4_DIR/logger.py > $HW4_DIR/banned-data-logs.log 2>&1 &
+          $HW5_DIR/env/bin/python3 $HW4_DIR/logger.py > $HW5_DIR/banned-data-logs.log 2>&1 &
 
 
 - name: gdm-pubsub-am

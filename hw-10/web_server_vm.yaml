@@ -15,38 +15,32 @@ resources:
     accountId: ds561-service-account
     displayName: GDM Service Account
 
-# - name: service-accounts
-#   type: service-accounts.py
-#   properties:
-#     project: ds-561-am
-#     service-account: ds561-service-account
 
-# Define IAM policy bindings for the service account
-# - name: sa-logging-role
-#   type: gcp-types/cloudresourcemanager-v1:virtual.projects.iamMemberBinding
+- name: sa-logging-role
+  type: gcp-types/cloudresourcemanager-v1:virtual.projects.iamMemberBinding
 
-#   properties:
-#     accountId: ds561-service-account
+  properties:
+    accountId: ds561-service-account
 
 
-#   accessControl:
-#     gcpIamPolicy:
-#       bindings:
-#       - role: roles/logging.logWriter
-#         members:
-#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
-#       - role: roles/pubsub.admin
-#         members:
-#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
-#       - role: roles/cloudsql.admin
-#         members:
-#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
-#       - role: roles/secretmanager.admin
-#         members:
-#         - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
-#   metadata:
-#     dependsOn:
-#       - gdm-serv-acc-am
+  accessControl:
+    gcpIamPolicy:
+      bindings:
+      - role: roles/logging.logWriter
+        members:
+        - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+      - role: roles/pubsub.admin
+        members:
+        - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+      - role: roles/cloudsql.admin
+        members:
+        - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+      - role: roles/secretmanager.admin
+        members:
+        - "serviceAccount:$(ref.gdm-serv-acc-am.email)"
+  metadata:
+    dependsOn:
+      - gdm-serv-acc-am
 
 
 - name: gdm-vm-web-am
@@ -187,16 +181,6 @@ resources:
       tier: db-f1-micro
     dependsOn:
     - gdm-serv-acc-am
-
-
-# Create a database in the Cloud SQL instance
-- name: my-database
-  type: sqladmin.v1beta4.database
-  properties:
-    name: hw-5  # Name of the database
-    instance: $(ref.my-cloud-sql-instance.name)
-    dependsOn:
-      - my-cloud-sql-instance
 
 # Create a database user with a password
 - name: my-database-user
